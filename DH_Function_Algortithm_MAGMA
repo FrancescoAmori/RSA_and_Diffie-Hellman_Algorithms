@@ -1,0 +1,50 @@
+function generazione_DH_parameteri(pbits,qbits)                                 // funzione genera parametri
+  q := RandomPrime(qbits);                                                        // scelta q primo in base al parametro
+  r := Random(q);                                                                 // calcola r come numero random piu piccolo di q
+  p := q*r + 1;                                                                   // cacloca p in base alla codndizione (PUBBLICO)
+  while (IsPrime(p) eq false) do                                                  // finche p non è primo allora:
+        r := Random(q);                                                           // genera un r casuale come sopra
+        p := q*r + 1;                                                             // calcola p secondo la condizione
+  end while;                                                                      // fine while
+  g := Random(p-1);                                                               // (g = BASE PUBBLICA) assegnazione valore random a g secondo la condizione (p-1)
+  while ((Modexp(g,q,p-1) eq 1) and (Modexp(g,r,p-1) eq 1)) do                    // finche (Modexp(g,q,p-1) e (Modexp(g,r,p-1) sono ugauli a 1 allora:
+        g := Random(p-1);                                                         // ricalcola g
+  end while;                                                                      // fine while
+      return p,q,g;                                                               // ritorna i valori
+end function;                                                                   // fine funzione
+
+function ottieni_chiavi_DH(p,g)                                                 // funzione asegnazioni chiavi | a, b sono random 1 < a,b < p-1
+  a := Random(1,p-1);                                                             // Alice chiave SEGRETA
+  b := Random(1,p-1);                                                             // Bob chiave SEGRETA
+  A := Modexp(g,a,p-1);                             // A = g^a modulo p-1         // Allice chiave PUBBLICA
+  B := Modexp(g,b,p-1);                             // B = g^b modulo p-1         // Bob chiave PUBBLICA
+  S := Modexp(g,a*b, p-1);                          // S = g^ab modulo p-1        // Chiave segreta condivisa
+  return a,A,b,B,S;                                                               // ritorna valori chiavi
+end function;                                                                   // fine funzione
+
+function DH(x,y,z,w)
+  for pars in [[x,y],[z,w]] do                                              // ciclo scelta valori per generazione parametri
+    pbits := pars[1];                                                             // la bitlength di p numero primo
+    qbits := pars[2];                                                             // è la lunghezza che deve avere almeno un fattore di p-1
+    print"pbits, qits := ",pbits,qbits;                                           // valori iniziali
+    p,q,g := generazione_DH_parameteri(pbits,qbits);                              // genera parametri p,q,g
+    print"p := ",p;                                                               // stampa p
+    print"q := ",q;                                                               // stampa q
+    print"g := ",g;                                                               // stampa g
+    // for t in [1..3] do                                                         // possibile ciclo per 3 possibili chiavi
+    a,A,b,B,S := ottieni_chiavi_DH(p,g);                                          // richiama funzione
+    // print " t:= ",t;                                                           // stampa numero dei chiave del ciclo
+    print "a A b B S := ", a,A,b,B,S;                                                       // stampa valori chiavi
+    if Modexp(B,a,p-1) ne S then error "Alice errore condivisione chiave segreta"; end if;  // errore alice
+    if Modexp(A,b,p-1) ne S then error "Bob errore condivisione chiave segreta";   end if;  // errore bob
+    //end for;                                                                              // fine ciclo for ipotetico
+    key_mex_a :=Modexp(Modexp(g,a,p),b,p);                                                  // verifica della key per il messaggio per alice
+    print "key_mex_a = ", key_mex_a;                                                            // stampa key_mex_a
+    key_mex_b :=Modexp(Modexp(g,b,p),a,p);                                                  // veifica della key per il messaggio per bob
+    print "key_mex_b = ", key_mex_b;                                                            // stampa key_mex_b
+    print "il messaggio cifrato e decodificato coincide?"; key_mex_a eq key_mex_b; print""; // stampa controllo + riga a capo
+  end for;                                                                                  // fine esecuzione
+  return [x,y],[z,w];
+end function;
+
+DH()

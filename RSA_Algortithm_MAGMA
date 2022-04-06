@@ -1,0 +1,107 @@
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+// basta chiamare la funzione RSA_Message() e inserire tre le parentesi il numero per le generazione key
+// FUNZIONE GENERA RSA KEYS
+function generazione_RSA_keys(number)                                           // passo un numero (o una sequenza di numeri) cosi da creare le Keys per il valore assegnato
+	 p := RandomPrime(number);                                                    // genero un nuemro primo arbitrario molto grande
+	 q := RandomPrime(number);                                                    // genero un nuemro primo arbitrario molto grande
+	 n := p*q;                                                                    // calcolo n
+	 ph := (p-1)*(q-1);                                                           // funione ph
+	 e := Random(2, ph);                                                          // generazione casuale si un numero e compre tra 2 e ph (cosi non puo essere =1)
+	 while(not(IsCoprime(e, ph))) do                                              // ciclo while affinche e e ph siano Coprimi
+		e := Random(2, ph);                                                         // genera nuovamente e
+  end while;                                                                    // fine while
+	 d := Modinv(e, ph);                                                          // n1 e n2 interi (n2 positivo) | n1, m2 sono coprimi -> Output : Y inversa di n1 modulo m2, ovvero un numero intero 1 <= Y < m2 | Y*n1 = 1 mod m2
+	 return  n,p,q,e,d;                                                           // ritorna i valori
+end function;                                                                   // fine funzione
+
+// FUNZIONE RSA ENCRYPT
+function RSAencrypt(m,n,e)                                                      // FUNZIONE RSA_ENCRYPT
+	 return  Modexp(m,e,n);                                                       // calcola (m^e mod n)
+end function;                                                                   // fine funzione
+
+// FUNZIONE RSA DECRYPT
+function RSAdecrypt(c,n,d)                                                      // FUNZIONE RSA_DECRYPT
+	 return  Modexp(c,d,n);                                                       // calcola (c^d mod n)
+end function;                                                                   // fine funzione
+
+// FUNZIONE RSA MESSAGGIO (main)
+function RSA_Message(xx)                                                        // xx indica un numero arbitrariamente grande all'interno del quale la funzione RandomPrime creerà p e q
+  for number in [xx] do                                                         // ciclo per possibili numeri xx [xx,yy,...] per ciascuno si eseguirà l'algoritmo
+    // print "number := ",number;                                               // stampa nuemro considerato
+    n,p,q,e,d := generazione_RSA_keys(number);                                  // ritorna i valori n,p,q,e,d
+    print "n := ",n;                                                            // stampa n
+    print "e := ",e;                                                            // stampa e
+    print "d := ",d;                                                            // stampa d
+    for t in [1] do                                                             // ciclo for per le 3 possibilità
+      print "tentativo numero:= ",t;                                            // stampa t come numero del tentativo
+      m := Random([2..(n-1)]);                                                  // generazione mesaggio m come numero random compreso tra 2 e n-1
+      c := RSAencrypt(m,n,e);                                                   // critto il messaggio m e lo chiamo c
+      mm := RSAdecrypt(c,n,d);                                                  // decodifico c per vedere se leggo m e lo chiamo mm
+      if m ne mm then error "Encryption/Decryption non funziona"; end if;       // verifico che m e mm coincidano
+      print "m :=  ",m;                                                         // stampa messaggio in chiaro m
+      print "c :=  ",c;                                                         // stampa messaggio cifrato C
+      print "mm := ",mm;                                                        // stampa messaggio decodificato mm
+      print "il messaggio m e quello decodificato mm coincidono? ";             // stampa info prestampa
+      m eq mm;                                                                  // verifica che m e mm coincidano
+    end for;                                                                    // fine ciclo
+  end for;                                                                      // fine ciclo
+  print"il valore ustao per l'esecuzione è: ";                                  // stampa info pre return
+  return xx;                                                                    // stampa il valore usato per la generazione delle Keys
+end function;                                                                   // fine funzione
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+// basta chiamare la funzione RSA() e inserire tre le parentesi il numero per le generazione key
+// FUNZIOONE RSA (Key_Generations/Cyrpt/Decrypt)
+function RSA(xx)                                                                      // xx = numero limite molto grande passato alla funzione RandomPrime per la generazione di p e q
+  p:= RandomPrime(xx);                                                                // genero un nuemro primo arbitrario molto grande (Cambiare il numero per renderlo piu grande)
+  print"p  = ", p;                                                                    // stampo p
+  q:= RandomPrime(xx);                                                                // genero un nuemro primo arbitrario molto grande (Cambiare il numero per renderlo piu grande)
+  print"q  = ", q;                                                                    // stampo q
+                                                                                      // imposto e = numero(ex: 5) | ed≡1mod(p−1) , ed≡1mod(q−1)
+
+  ph := (p-1)*(q-1);                                                                  // cacolo funzione phi
+  print"ph = ", ph;                                                                   // stampo ph
+  e := Random(2, ph);                                                                 // calcolo e
+  while(not(IsCoprime(e, ph))) do                                                     // ciclo in modo tale che siano Coprimi
+   e := Random(2, ph);                                                                // imposto il valore di e
+  end while;                                                                          // fine while
+  print"e  = ", e;                                                                    // stampo e
+
+                                                                                      // prima di vedere GCD(e, p−1)=1 , GCD(e, q − 1) =1 dobbiamo vedere che d esista
+  d1:= InverseMod(e,p-1);                                                             // calcoiamo prima  d1 mod (p − 1)
+  print"d1 = ", d1;                                                                   // stampa d1
+  d2:= InverseMod(e,q-1);                                                             // calcoiamo prima  d1 mod (q − 1)
+  print"d2 = ", d2;                                                                   // stampa d1
+  print "il GCD(p-1,q-1)= ", GCD(p-1,q-1);                                            // calcolo il GCD tra i due numeri -1
+  print "fattorizzazione di p-1 = ", TrialDivision(p-1);                              // verifica della divisione
+  print "fattorizzazione di q-1 = ",TrialDivision(q-1);                               // verifica della divisione
+
+  print "verifico se d1 e d2 hanno lo stesso vaolore in modulo(p-1,q-1)";             // stampo info
+  print "d1 mod GCD(p-1,q-1) = ",d1 mod GCD(p-1,q-1);                                 // dividiamo d1 per il GCD trovato prima
+  print "d2 mod GCD(p-1,q-1) = ",d2 mod GCD(p-1,q-1);                                 // dividiamo d2 per il GCD trovato prima
+  d:= CRT([d1,d2],[p-1,(q-1) div GCD(p-1,q-1)]);                                      // (q−1)/GCD non è divisibile per 2 o 3 quindi usiamo "Chinese remainder" su  p−1 and (q−1)/GCD
+  print "d | e*d congruo 1 mod ph(n) ==> ", d;                                        // stampa d
+
+                                                                                      // e , d sono inversi modulo p−1 e modulo q−1, n = pq.
+  print "verifico che e,d siano inverse modulo p-1, q-1 e siano entrmabi 1";          // stampo info
+  print "ed mod p-1 = ", (e*d) mod (p-1);                                             // calcolo e*d mod p-1
+  print "ed mod q-1 = ", (e*d) mod (q-1);                                             // calcolo e*d mod q-1
+  if (e*d) mod (p-1) ne (e*d) mod (q-1) then error "errore generazione keys"; end if; // verifico che entrmabi siano 1
+  n:= p*q;                                                                            // calcolo n
+  print "n=p*q => ", n;                                                               // stampo n
+  m:= Random(n);                                                                      // prendiamo un m random che è il messaggio che voglio inviare
+  print "il messaggio che voglio inviare cifrato è: ";                                // stampa info prestampa
+  print "m   = ", m;                                                                  // stampo messaggio
+  c:= Modexp(m,e,n);                                                                  // calcolo c
+  print "il testo cifrato che invio è: ";                                             // stampa info prestampa
+  print "c   = ", c;                                                                  // stampo testo cifrato
+  m_decod := Modexp(c,d,n);                                                           // decodifico
+  print "il messaggio decodificato è: ";                                              // stampa info prestampa
+  print "m_d = ", m_decod;                                                            // stampo mssaggio decodificato
+  print "il messaggio m è uguale al messaggio che decodificio? (m ≡ c^d mod n)";      // info prestampa
+  m eq Modexp(c,d,n);                                                                 // verifica in base a (c d n)
+  print "il messaggio m è uguale al messaggio decodificato? (m ≡ c^ed mod n)";        // info prestampa
+  m eq Modexp(m,e*d,n);                                                               // verifica in base a (c ed n)
+  print "il valore usato come limite per la genrazione delle Keys è: ";               // stampo valore usato per generazione keys
+  return xx;                                                                          // ritorno il valore
+end function;                                                                         // fine funzione
